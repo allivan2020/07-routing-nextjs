@@ -23,7 +23,12 @@ const api = axios.create({
 export const fetchNotes = async (
   params: FetchNotesParams,
 ): Promise<FetchNotesResponse> => {
-  const { data } = await api.get<FetchNotesResponse>('/notes', { params });
+  const { tag, ...rest } = params;
+  const queryParams = tag === 'all' ? rest : params;
+
+  const { data } = await api.get<FetchNotesResponse>('/notes', {
+    params: queryParams,
+  });
   return data;
 };
 
