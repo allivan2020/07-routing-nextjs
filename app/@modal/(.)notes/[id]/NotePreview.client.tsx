@@ -1,29 +1,64 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api';
-import Modal from '@/components/Modal/Modal'; // Используем общий компонент!
+import Modal from '@/components/Modal/Modal';
+import { useRouter } from 'next/navigation';
 
-export default function NotePreviewClient({ id }: { id: string }) {
+// ОСЬ ТУТ МАЄ БУТИ ТІЛЬКИ "id"
+interface NotePreviewClientProps {
+  id: string;
+}
+
+export default function NotePreviewClient({ id }: NotePreviewClientProps) {
   const router = useRouter();
 
-  const { data: note } = useQuery({
+  const {
+    data: note,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
-    refetchOnMount: false, // Это требование ментора
+    refetchOnMount: false,
   });
 
-  if (!note) return null;
+  if (isLoading)
+    return (
+      <Modal onClose={() => router.back()}>
+        <div>Завантаження...</div>
+      </Modal>
+    );
+  if (isError || !note)
+    return (
+      <Modal onClose={() => router.back()}>
+        <div>Помилка завантаження.</div>
+      </Modal>
+    );
 
   return (
     <Modal onClose={() => router.back()}>
-      <div>
+      <div style={{ padding: '40px', position: 'relative' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ position: 'absolute', top: '20px', right: '20px' }}
+        >
+          Закрити
+        </button>
+
         <h2>{note.title}</h2>
         <p>
-          <strong>Tag:</strong> {note.tag}
+          <strong>Тег:</strong> #{note.tag}
         </p>
-        <div>{note.content}</div>
+
+        {/* createdAt для викладача */}
+        <p style={{ fontSize: '0.8rem', color: 'gray' }}>
+          Створено:{' '}
+          {note.createdAt ? new Date(note.createdAt).toLocaleString() : '—'}
+        </p>
+
+        <hr />
+        <div style={{ whiteSpace: 'pre-wrap' }}>{note.content}</div>
       </div>
     </Modal>
   );

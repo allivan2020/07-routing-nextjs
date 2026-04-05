@@ -6,24 +6,22 @@ import {
 import { fetchNoteById } from '@/lib/api';
 import NotePreviewClient from './NotePreview.client';
 
-// Добавляем params (как просил ментор и требует TypeScript)
-export default async function PhotoPage({
+export default async function NoteModalPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params; // Дожидаемся id из URL
+  const { id } = await params;
   const queryClient = new QueryClient();
 
-  // Предзагрузка данных на сервере (SSR) — требование ментора №10
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
   });
 
   return (
-    // Передаем предзагруженные данные в клиент
     <HydrationBoundary state={dehydrate(queryClient)}>
+      {/* ТЕПЕР ТУТ id={id} І ТИПИ ПОВНІСТЮ ЗБІГАЮТЬСЯ */}
       <NotePreviewClient id={id} />
     </HydrationBoundary>
   );
