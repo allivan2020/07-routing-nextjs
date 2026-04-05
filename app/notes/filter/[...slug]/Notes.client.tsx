@@ -7,23 +7,29 @@ import { fetchNotes, FetchNotesResponse } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
 import { Note } from '@/types/note';
 
-export default function NotesClient() {
+// 1. Добавляем описание типов для пропсов
+interface NotesClientProps {
+  tag?: string;
+}
+
+// 2. Принимаем проп tag
+export default function NotesClient({ tag }: NotesClientProps) {
   const params = useParams();
+
+  // Если tag передан как проп, используем его, иначе берем из URL
   const slug = params.slug;
-  const category = Array.isArray(slug) ? slug[0] : slug;
+  const urlCategory = Array.isArray(slug) ? slug[0] : slug;
+  const category = tag || urlCategory;
 
   const { data, isLoading } = useQuery<FetchNotesResponse>({
     queryKey: ['notes'],
     queryFn: () => fetchNotes({ page: 1, perPage: 10 }),
   });
 
-  // 1. Отримуємо масив нотаток БЕЗ використання 'any'
-  // Використовуємо опціональний ланцюжок ?. для безпечного доступу
   const notes: Note[] = data?.notes || [];
 
-  // 2. Фільтруємо замітки за тегом
   const filteredNotes =
-    category === 'all'
+    category === 'all' || !category
       ? notes
       : notes.filter((note: Note) => note.tag === category);
 
@@ -32,7 +38,9 @@ export default function NotesClient() {
   return (
     <div style={{ padding: '20px' }}>
       <h2 style={{ marginBottom: '20px' }}>
-        {category === 'all' ? 'Всі замітки' : `Категорія: ${category}`}
+        {category === 'all' || !category
+          ? 'Всі замітки'
+          : `Категорія: ${category}`}
       </h2>
 
       {filteredNotes.length > 0 ? (
