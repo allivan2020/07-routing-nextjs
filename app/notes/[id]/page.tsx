@@ -4,7 +4,8 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api';
-import NotePreviewClient from './NotePreview.client';
+// ИМПОРТИРУЕМ НОВОЕ ИМЯ
+import NoteDetailsClient from './NoteDetails.client';
 
 export default async function NoteModalPage({
   params,
@@ -21,7 +22,8 @@ export default async function NoteModalPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotePreviewClient id={id} />
+      {/* ИСПОЛЬЗУЕМ НОВОЕ ИМЯ */}
+      <NoteDetailsClient id={id} />
     </HydrationBoundary>
   );
 }

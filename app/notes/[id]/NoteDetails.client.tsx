@@ -3,12 +3,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api';
 
-// МЕНЯЕМ noteId на id
-interface NotePreviewClientProps {
+interface NoteDetailsClientProps {
   id: string;
 }
 
-export default function NotePreviewClient({ id }: NotePreviewClientProps) {
+export default function NoteDetailsClient({ id }: NoteDetailsClientProps) {
   const { data: note } = useQuery({
     queryKey: ['note', id],
     queryFn: () => fetchNoteById(id),
