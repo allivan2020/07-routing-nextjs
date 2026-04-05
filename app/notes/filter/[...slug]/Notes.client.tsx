@@ -1,52 +1,61 @@
 'use client';
 
-import React from 'react';
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchNotes, FetchNotesResponse } from '@/lib/api';
+import { fetchNotes } from '@/lib/api';
 import NoteList from '@/components/NoteList/NoteList';
-import { Note } from '@/types/note';
+import SearchBox from '@/components/SearchBox/SearchBox';
+import Pagination from '@/components/Pagination/Pagination';
+import Modal from '@/components/Modal/Modal';
+import NoteForm from '@/components/NoteForm/NoteForm';
 
-// 1. Добавляем описание типов для пропсов
-interface NotesClientProps {
-  tag?: string;
-}
+export default function NotesClient({ tag }: { tag: string }) {
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-// 2. Принимаем проп tag
-export default function NotesClient({ tag }: NotesClientProps) {
-  const params = useParams();
+  // Логика дебаунса: ждем 500мс после последнего ввода, прежде чем обновлять поиск
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1); // Сбрасываем на 1 страницу при новом поиске
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
 
-  // Если tag передан как проп, используем его, иначе берем из URL
-  const slug = params.slug;
-  const urlCategory = Array.isArray(slug) ? slug[0] : slug;
-  const category = tag || urlCategory;
-
-  const { data, isLoading } = useQuery<FetchNotesResponse>({
-    queryKey: ['notes'],
-    queryFn: () => fetchNotes({ page: 1, perPage: 10 }),
+  const { data } = useQuery({
+    // Ключ ОБЯЗАТЕЛЬНО должен включать все параметры, чтобы Query перезапускался
+    queryKey: ['notes', tag, page, debouncedSearch],
+    queryFn: () =>
+      fetchNotes({ tag, page, perPage: 10, search: debouncedSearch }),
   });
 
-  const notes: Note[] = data?.notes || [];
-
-  const filteredNotes =
-    category === 'all' || !category
-      ? notes
-      : notes.filter((note: Note) => note.tag === category);
-
-  if (isLoading) return <div>Завантаження нотаток...</div>;
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h2 style={{ marginBottom: '20px' }}>
-        {category === 'all' || !category
-          ? 'Всі замітки'
-          : `Категорія: ${category}`}
-      </h2>
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <SearchBox value={search} onChange={setSearch} />
+        <button onClick={() => setIsModalOpen(true)}>Add Note</button>
+      </div>
 
-      {filteredNotes.length > 0 ? (
-        <NoteList notes={filteredNotes} />
-      ) : (
-        <p>У цій категорії поки немає заміток.</p>
+      <NoteList notes={data?.notes || []} />
+
+      <Pagination
+        current={page}
+        total={data?.totalPages || 1}
+        onChange={setPage}
+      />
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onClose={() => setIsModalOpen(false)} />
+        </Modal>
       )}
     </div>
   );

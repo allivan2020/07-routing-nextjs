@@ -1,34 +1,40 @@
 'use client';
 
 import React from 'react';
-import ReactPaginate from 'react-paginate'; // Спробуйте прямий імпорт
 import css from './Pagination.module.css';
 
 interface PaginationProps {
-  totalPages: number;
-  currentPage: number;
-  onPageChange: (page: number) => void;
+  current: number;
+  total: number;
+  onChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  totalPages,
-  currentPage,
-  onPageChange,
-}) => {
+export default function Pagination({
+  current,
+  total,
+  onChange,
+}: PaginationProps) {
   return (
-    <ReactPaginate
-      previousLabel={'<'}
-      nextLabel={'>'}
-      breakLabel={'...'}
-      pageCount={totalPages}
-      marginPagesDisplayed={2}
-      pageRangeDisplayed={5}
-      onPageChange={(data) => onPageChange(data.selected + 1)}
-      containerClassName={css.pagination}
-      activeClassName={css.active}
-      forcePage={currentPage - 1}
-    />
-  );
-};
+    <div className={css.pagination}>
+      <button
+        disabled={current <= 1}
+        onClick={() => onChange(current - 1)}
+        className={css.btn}
+      >
+        Prev
+      </button>
 
-export default Pagination;
+      <span className={css.info}>
+        Page {current} of {total}
+      </span>
+
+      <button
+        disabled={current >= total}
+        onClick={() => onChange(current + 1)}
+        className={css.btn}
+      >
+        Next
+      </button>
+    </div>
+  );
+}

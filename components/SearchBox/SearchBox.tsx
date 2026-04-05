@@ -1,16 +1,21 @@
-import css from './SearchBox.module.css'; // Путь к стилям в той же папке
+'use client';
+
+import React from 'react';
+import css from './SearchBox.module.css';
 
 interface SearchBoxProps {
+  value: string;
   onChange: (value: string) => void;
 }
 
-export default function SearchBox({ onChange }: SearchBoxProps) {
+export default function SearchBox({ value, onChange }: SearchBoxProps) {
   return (
     <input
-      className={css.input}
       type="text"
-      placeholder="Search notes"
+      className={css.input}
+      value={value}
       onChange={(e) => onChange(e.target.value)}
+      placeholder="Search..."
     />
   );
 }

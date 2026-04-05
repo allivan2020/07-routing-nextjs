@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import css from './SidebarNotes.module.css';
+import css from './Sidebar.module.css';
 
 export default function SidebarNotes() {
   return (
@@ -14,7 +14,6 @@ export default function SidebarNotes() {
           Work
         </Link>
       </li>
-      {/* Можешь добавить еще теги, если они есть в базе */}
     </ul>
   );
 }

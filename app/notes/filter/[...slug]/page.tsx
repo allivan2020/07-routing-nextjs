@@ -1,24 +1,29 @@
-import React from 'react';
-import NotesClient from '@/app/notes/filter/[...slug]/Notes.client';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
+import { fetchNotes } from '@/lib/api';
+import NotesClient from './Notes.client';
 
-interface PageProps {
+export default async function NotesPage({
+  params,
+}: {
   params: Promise<{ slug: string[] }>;
-}
-
-export default async function FilteredNotesPage({ params }: PageProps) {
+}) {
   const { slug } = await params;
-  const currentTag = slug?.[0];
+  const tag = slug[0];
 
-  // Если в адресе "all", фильтр не применяем (передаем undefined)
-  const filterValue = currentTag === 'all' ? undefined : currentTag;
+  const queryClient = new QueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: ['notes', tag, 1, ''], // тег, страница 1, пустой поиск
+    queryFn: () => fetchNotes({ tag, page: 1, perPage: 10, search: '' }),
+  });
 
   return (
-    <div>
-      <h1 style={{ marginBottom: '20px', color: '#333' }}>
-        {currentTag === 'all' ? 'Все заметки' : `Категория: ${currentTag}`}
-      </h1>
-      {/* Передаем пойманный тег в наш основной список */}
-      <NotesClient tag={filterValue} />
-    </div>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient tag={tag} />
+    </HydrationBoundary>
   );
 }
