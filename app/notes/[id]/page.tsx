@@ -1,30 +1,35 @@
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from '@tanstack/react-query';
-import NoteDetailsClient from './NoteDetails.client';
+'use client';
+
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api';
+import { useRouter } from 'next/navigation'; // Додаємо імпорт роутера
+import Modal from '@/components/Modal/Modal';
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
+export default function NotePreviewClient({ noteId }: { noteId: string }) {
+  const router = useRouter(); // Створюємо об'єкт роутера
 
-export default async function NoteDetailsPage({ params }: Props) {
-  const { id } = await params; // Правильно для Next.js 15
-
-  const queryClient = new QueryClient();
-
-  // Попереднє завантаження даних на сервері
-  await queryClient.prefetchQuery({
-    queryKey: ['note', id],
-    queryFn: () => fetchNoteById(id),
+  const { data: note, isLoading } = useQuery({
+    queryKey: ['note', noteId],
+    queryFn: () => fetchNoteById(noteId),
   });
 
+  // Функція для закриття модалки
+  const handleClose = () => {
+    router.back(); // Повертаємо користувача на попередню сторінку
+  };
+
+  if (isLoading) return <div>Завантаження...</div>;
+
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      {/* Передаємо id як пропс, якщо не хочемо юзати useParams всередині */}
-      <NoteDetailsClient noteId={id} />
-    </HydrationBoundary>
+    <Modal onClose={handleClose}>
+      {' '}
+      {/* Тепер ми передаємо onClose */}
+      <div style={{ padding: '20px' }}>
+        <h2>{note?.title}</h2>
+        <hr />
+        <p>{note?.content}</p>
+      </div>
+    </Modal>
   );
 }

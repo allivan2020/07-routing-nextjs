@@ -1,5 +1,5 @@
 import React from 'react';
-import NotesClient from '@/app/notes/Notes.client';
+import NotesClient from '@/app/notes/filter/[...slug]/Notes.client';
 
 interface PageProps {
   params: Promise<{ slug: string[] }>;
