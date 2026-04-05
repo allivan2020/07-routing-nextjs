@@ -2,12 +2,12 @@ import React from 'react';
 import NotesClient from '@/app/notes/Notes.client';
 
 interface PageProps {
-  params: Promise<{ tag: string[] }>;
+  params: Promise<{ slug: string[] }>;
 }
 
 export default async function FilteredNotesPage({ params }: PageProps) {
-  const { tag } = await params;
-  const currentTag = tag?.[0];
+  const { slug } = await params;
+  const currentTag = slug?.[0];
 
   // Если в адресе "all", фильтр не применяем (передаем undefined)
   const filterValue = currentTag === 'all' ? undefined : currentTag;
